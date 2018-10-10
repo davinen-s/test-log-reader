@@ -23,7 +23,7 @@ import test.logreader.model.LogEntry;
 public class App 
 {
 	/** The delimiter used in the text file. */
-	private static final String DELIMITED = "\t";
+	private static final String DELIMITER = "\t";
 	
 	/** The default text file location. */
     private static final String DEFAULT_FILE_LOCATION = "c://test/lines.txt";
@@ -34,11 +34,11 @@ public class App
 		
 		HashMap<String, List<LogEntry>> usersLog = new HashMap<>();
 		
+		//we skip 1st line as file contain headers.
 		try (Stream<String> stream = Files.lines(Paths.get(DEFAULT_FILE_LOCATION)).skip(1)) {
 
 			stream.forEach(s -> {
-				System.out.println(s);
-				String[] splitString = s.split(DELIMITED);
+				String[] splitString = s.split(DELIMITER);
 
 				String userId = splitString[0];
 				if (StringUtils.isNotBlank(userId)) {
@@ -47,17 +47,13 @@ public class App
 					LogEntry logEntry = populateLogEntry(splitString);
 					addLogEntryInUsersLog(usersLog, userId, logEntry);
 				}
-				//System.out.println("extract: " + userId + ", " + splitString[1]);
 			});
 
 		} catch (IOException  e) {
 			e.printStackTrace();
 		}
 		
-		for(Map.Entry<String, List<LogEntry>> pair: usersLog.entrySet() ) {
-			System.out.println("---------------- User: " + pair.getKey() + "----------------");
-			pair.getValue().forEach(s -> System.out.println(s.toString()));
-		}
+		displayAllLogRecords(usersLog);
 		
 		String userWithHighestConsumption = StringUtils.EMPTY;
 		int highestConsumption = 0;
@@ -75,10 +71,23 @@ public class App
 			}
 		}
 		
-		System.out.println("User with highest resource consumption is : " + userWithHighestConsumption + " and consumed " + highestConsumption);
+		System.out.println("\n\n\nUser with highest resource consumption is : " + userWithHighestConsumption + " and consumed " + highestConsumption);
 		
 		
     }
+
+	/**
+	 * Output every logs in the console.
+	 * 
+	 * @param usersLog
+	 *            the users' log.
+	 */
+	private static void displayAllLogRecords(HashMap<String, List<LogEntry>> usersLog) {
+		for(Map.Entry<String, List<LogEntry>> pair: usersLog.entrySet() ) {
+			System.out.println("---------------- User: " + pair.getKey() + "----------------");
+			pair.getValue().forEach(s -> System.out.println(s.toString()));
+		}
+	}
 
 	/**
 	 * Populate a log entry with read line.
@@ -88,6 +97,9 @@ public class App
 	 * @return a log entry
 	 */
 	private static LogEntry populateLogEntry(String[] splitString) {
+		
+		//TODO throw exception if invalid data found.
+		
 		LogEntry logEntry = new LogEntry();
 		logEntry.setUserId(splitString[0]);
 		logEntry.setPId(splitString[1]);
